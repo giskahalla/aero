@@ -21,7 +21,7 @@ export function Logo() {
   const { open, toggleSidebar } = useSidebar()
 
   return (
-    <div className={`flex justify-between items-center gap-2 transition-all duration-300 border-b ${open ? "w-auto" : "w-full"}`}>
+    <div className={`flex justify-between items-center gap-2 transition-all duration-300 border-b ${open ? "w-auto pl-1" : "w-full pl-0.5"}`}>
 
         <div className={`flex h-[58px] shrink-0 items-center border-sidebar-border transition-all duration-300 justify-start gap-3`}>
             {/* logo */}

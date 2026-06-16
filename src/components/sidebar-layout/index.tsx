@@ -1,7 +1,9 @@
 import { 
     LayoutDashboard, 
-    CloudLightning, 
-    LucideStars 
+    Zap, 
+    LucideStars,
+    UsersRound,
+    CirclePlus 
 } from "lucide-react";
 
 import Link from "next/link";
@@ -15,8 +17,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { Teams } from '@/features'
 
 import { 
     Logo,
@@ -25,7 +27,7 @@ import {
 
 const modules = [
   { name: "Dashboard", url: "/", icon: LayoutDashboard },
-  { name: "Sprint Workspace", url: "/sprints", icon: CloudLightning },
+  { name: "Tasks Overview", url: "tasks", icon: Zap },
   { name: "AI Copilot", url: "/copilot", icon: LucideStars },
 ];
 
@@ -38,20 +40,35 @@ export default function SidebarLayout() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup />
+        <SidebarGroup>
             <SidebarMenu>
                 {modules.map((module) => (
                     <SidebarMenuItem key={module.name}>
-                    <SidebarMenuButton asChild>
-                        <Link href={module.url}>
-                            <module.icon />
-                            <span>{module.name}</span>
-                        </Link>
-                    </SidebarMenuButton>
+                      <SidebarMenuButton asChild  className="h-12">
+                          <Link href={module.url}>
+                              <module.icon />
+                              <span>{module.name}</span>
+                          </Link>
+                      </SidebarMenuButton>
                     </SidebarMenuItem>
                 ))}
             </SidebarMenu>
-        <SidebarGroup />
+        </SidebarGroup>
+        <SidebarGroup>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton className="h-12">
+                      <UsersRound />
+                      <span>Teams</span>
+                      <Teams
+                          btnAction={     
+                            <CirclePlus className="ml-auto"/>
+                          }
+                      />
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>
