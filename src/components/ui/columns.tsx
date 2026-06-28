@@ -4,8 +4,11 @@ import { ArrowUpDown } from "lucide-react"
 import { type ColumnDef } from "@tanstack/react-table"
 
 import { Button } from "./button"
+import { Avatar, AvatarImage } from "./avatar"
 
 import { ColumnConfig } from "@/types"
+
+import { TIME } from "@/utils"
 
 const ColumnHeader = ({ column, title, disabled }: { column: any; title: string, disabled?: Boolean }) => {
     if(disabled) {
@@ -54,6 +57,35 @@ export function genericColumns<TData extends Record<string, any>>(
     //       enableHiding: false,
     //     }
 
+      case "user":
+        return {
+          accessorKey: config.accessorKey,
+          header: ({ column }) => (
+            <ColumnHeader column={column} title={config.title || ""} disabled={!config.enableSorting}/>
+          ),
+          cell: ({ row }) => {
+            const rawValue = row.getValue(config.accessorKey || "")
+            const user = config.options?.find((opt) => String((opt as any).id) === String(rawValue)) as any
+            return (
+              <div>
+                <Avatar className="flex items-center">
+                  <AvatarImage
+                    src="https://github.com/shadcn.png"
+                    alt="@shadcn"
+                    className="grayscale"
+                  />
+                  <div className="flex flex-col mx-3">
+                    <span>{user?.name}</span>
+                    <span className="text-xs text-muted-foreground">{user?.email}</span>
+                  </div>
+                </Avatar>
+              </div>
+            )
+          },
+          enableSorting: false,
+          enableHiding: false,
+        }
+
       case "text":
         return {
           accessorKey: config.accessorKey,
@@ -77,16 +109,13 @@ export function genericColumns<TData extends Record<string, any>>(
           ),
           cell: ({ row }) => {
             const rawValue = row.getValue(config.accessorKey || "")
-            const target = config.options?.find((opt) => opt.value === rawValue)
+            const target = config.options?.find((opt) => String((opt as any).value) === String(rawValue))
 
             if (!target) return null
 
             return (
               <div className="flex items-center gap-2">
-                {/* {target.icon && (
-                  <target.icon className="size-4 text-muted-foreground" />
-                )} */}
-                <span className={target.text}>{target.label}</span>
+                <span className={(target as any).text}>{(target as any).label}</span>
               </div>
             )
           },
@@ -96,6 +125,22 @@ export function genericColumns<TData extends Record<string, any>>(
           enableSorting: config.enableSorting ?? true,
           enableHiding: config.enableHiding ?? true,
         }
+
+      case "date":
+        return {
+          accessorKey: config.accessorKey,
+          header: ({ column }) => (
+            <ColumnHeader column={column} title={config.title || ""} disabled={!config.enableSorting}/>
+          ),
+          cell: ({ row }) => (
+            <div className="font-medium">
+              {TIME.parseDate(row.getValue(config.accessorKey || ""))}
+            </div>
+          ),
+          enableSorting: config.enableSorting ?? true,
+          enableHiding: config.enableHiding ?? true,
+        }
+
 
       case "actions":
         return {

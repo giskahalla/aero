@@ -54,6 +54,11 @@ export function DataTable<TData, TValue>({
       sorting,
       columnFilters,
     },
+    initialState: {
+      pagination: {
+        pageSize: 5,
+      },
+    },
   })
 
   return (
@@ -113,10 +118,13 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
-        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="flex w-[90px] items-center justify-center text-sm font-medium">
             Page {table.getState().pagination.pageIndex + 1} of{" "}
             {table.getPageCount()}
-          </div>
+        </div>
         <div className="flex items-center justify-end space-x-2 py-4">
           <Button
             variant="outline"

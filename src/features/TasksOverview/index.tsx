@@ -11,7 +11,7 @@ import { Field } from "@/components/ui/field"
 import { MonthYearPicker } from "@/components/ui/datePicker"
 import { Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem } from "@/components/ui/combobox"
 import { HeaderLayout } from "@/components/index"
-import { TaskCard, TaskCalendar, TaskModal } from "./components"
+import { TaskCard, TaskCalendar, TaskList, TaskModal } from "./components"
 
 import { Task } from "@/types/index"
 
@@ -22,47 +22,63 @@ export function TasksOverview({ tasks }: { tasks: Task[] }) {
     const [date, setDate] = React.useState<Date>(new Date())
     const [viewType, setViewType] = React.useState<"card" | 'list' | "calendar">("card")
     const [editTask, setEditTask] = React.useState<Task | null>(null)
+    const [filter, setFilter] = React.useState({ search: '', priority: 'all' })
 
-    const filteredTasks = tasks.filter((task) => {
-        if (!task?.due_date) return false
-
-        const taskDate = parseISO(task.due_date) 
+   const filteredTasks = tasks.filter((task) => {
+        if (!task?.due_date) return false;
+            
+        const taskDate = parseISO(task.due_date);
+        const matchMonth = getMonth(taskDate) === getMonth(date);
+        const matchYear = getYear(taskDate) === getYear(date);
         
-        const matchMonth = getMonth(taskDate) === getMonth(date)
-        const matchYear = getYear(taskDate) === getYear(date)
+        if (!matchMonth || !matchYear) return false;
 
-        return matchMonth && matchYear
-    })
+        const keyword = filter.search?.toLowerCase();
+        const matchSearch = !filter.search || task.title.toLowerCase().includes(keyword);
+
+        const matchPriority = filter.priority === 'all' ? true : String(task.priority) === String(filter.priority);
+
+        return matchSearch && matchPriority;
+    });
 
     const eachStatusCount = filteredTasks.reduce((acc, task) => {
         acc[task.status] = (acc[task.status] || 0) + 1
         return acc
     }, {} as Record<number, number>)
 
+
+    const basePriorityOptions = Object.values(COLOR.priorityColors)
+
+    const priorityOptions = [
+        { label: "All Priority", value: 'all' },
+        ...basePriorityOptions
+    ]
+
     const renderView = () => {
         switch(viewType){
             case 'card':
                 return <TaskCard tasks={filteredTasks} setEditTask={setEditTask} editTask={editTask} />
+            case 'list':
+                return <TaskList tasks={filteredTasks} setEditTask={setEditTask} editTask={editTask} />
             case 'calendar':
                 return <TaskCalendar />
         }
     }
 
-    const basePriorityOptions = Object.values(COLOR.priorityColors)
-
-    const priorityOptions = [
-        { label: "All Priority", value: basePriorityOptions.map(o => o.value).join(',') },
-        ...basePriorityOptions
-    ]
-
     const FilterSelect = ({ items }: { items: any[] }) => {
         return(
-            <Combobox items={items}>
+            <Combobox
+                items={items}
+                value={items.find(item => String(item.value) === filter.priority)?.label || ""}
+                onValueChange={(value) => {
+                    setFilter((prev) => ({ ...prev, priority: String(value) }));
+                }}
+            >
                 <ComboboxInput placeholder="Select Priority" />
                 <ComboboxContent className='w-10'>
                     <ComboboxList>
                     {(item) => (
-                        <ComboboxItem key={item.value} value={item.label}>
+                        <ComboboxItem key={item.value} value={String(item.value)}>
                         {item.label}
                         </ComboboxItem>
                     )}
@@ -80,6 +96,7 @@ export function TasksOverview({ tasks }: { tasks: Task[] }) {
                         {filteredTasks.length} Tasks · {eachStatusCount[0] || 0} To Do · {eachStatusCount[1] || 0} In Progress · {eachStatusCount[2] || 0} Done
                     </p>
                 </div>
+                
                 <div className="w-xl flex gap-2 items-end justify-end text-sm text-muted-foreground">
                     <Tabs defaultValue="card" onValueChange={(value) => setViewType(value as "card" | "calendar")} className="w-xl">
                         <TabsList className="w-full justify-end">
@@ -101,11 +118,19 @@ export function TasksOverview({ tasks }: { tasks: Task[] }) {
                     />
                 </div>
             </HeaderLayout>
+
             <div className="flex justify-end items-center gap-2">
                 <MonthYearPicker value={date} onChange={setDate} />
                 <Field orientation="horizontal" className="w-70">
                     <InputGroup>
-                        <InputGroupInput id="inline-start-input" placeholder="Search..." />
+                        <InputGroupInput 
+                            id="inline-start-input" 
+                            placeholder="Search..." 
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setFilter((prev) => ({ ...prev, search: value }));
+                            }}
+                        />
                         <InputGroupAddon align="inline-start">
                         <SearchIcon className="text-muted-foreground" />
                         </InputGroupAddon>
