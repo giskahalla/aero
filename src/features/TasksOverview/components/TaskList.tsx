@@ -21,7 +21,7 @@ const taskColumnsConfig: ColumnConfig[] = [
 
 const columns = genericColumns(taskColumnsConfig)
 
-export default function TaskList({ tasks, setEditTask, editTask }: { tasks: Task[]; setEditTask: (task: Task | null) => void; editTask: Task | null }) {
+export default function TaskList({ tasks }: { tasks: Task[] }) {
 
     return (
         <div className="my-10">

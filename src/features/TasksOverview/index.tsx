@@ -19,7 +19,7 @@ import { COLOR } from "@/constants"
 
 export function TasksOverview({ tasks }: { tasks: Task[] }) {
 
-    const [date, setDate] = React.useState<Date>(new Date())
+    const [month, setMonth] = React.useState<Date>(new Date())
     const [viewType, setViewType] = React.useState<"card" | 'list' | "calendar">("card")
     const [editTask, setEditTask] = React.useState<Task | null>(null)
     const [filter, setFilter] = React.useState({ search: '', priority: 'all' })
@@ -28,8 +28,8 @@ export function TasksOverview({ tasks }: { tasks: Task[] }) {
         if (!task?.due_date) return false;
             
         const taskDate = parseISO(task.due_date);
-        const matchMonth = getMonth(taskDate) === getMonth(date);
-        const matchYear = getYear(taskDate) === getYear(date);
+        const matchMonth = getMonth(taskDate) === getMonth(month);
+        const matchYear = getYear(taskDate) === getYear(month);
         
         if (!matchMonth || !matchYear) return false;
 
@@ -59,9 +59,9 @@ export function TasksOverview({ tasks }: { tasks: Task[] }) {
             case 'card':
                 return <TaskCard tasks={filteredTasks} setEditTask={setEditTask} editTask={editTask} />
             case 'list':
-                return <TaskList tasks={filteredTasks} setEditTask={setEditTask} editTask={editTask} />
+                return <TaskList tasks={filteredTasks} />
             case 'calendar':
-                return <TaskCalendar />
+                return <TaskCalendar month={month} tasks={filteredTasks} />
         }
     }
 
@@ -97,7 +97,7 @@ export function TasksOverview({ tasks }: { tasks: Task[] }) {
                     </p>
                 </div>
                 
-                <div className="w-xl flex gap-2 items-end justify-end text-sm text-muted-foreground">
+                <div className="flex gap-2 items-end justify-end text-sm text-muted-foreground">
                     <Tabs defaultValue="card" onValueChange={(value) => setViewType(value as "card" | "calendar")} className="w-xl">
                         <TabsList className="w-full justify-end">
                             <TabsTrigger value="card"><Kanban className="h-3 w-3" /> Board View</TabsTrigger>
@@ -119,8 +119,8 @@ export function TasksOverview({ tasks }: { tasks: Task[] }) {
                 </div>
             </HeaderLayout>
 
-            <div className="flex justify-end items-center gap-2">
-                <MonthYearPicker value={date} onChange={setDate} />
+            <div className="flex justify-end items-center gap-2 my-5">
+                <MonthYearPicker value={month} onChange={setMonth} />
                 <Field orientation="horizontal" className="w-70">
                     <InputGroup>
                         <InputGroupInput 
