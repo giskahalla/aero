@@ -1,6 +1,7 @@
 import { Calendar, Pencil } from "lucide-react"
 
-import { Card, CardContent, CardHeader, CardTitle, } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { TaskModal } from "./index"
 
@@ -48,6 +49,21 @@ export default function TaskCard({ tasks, setEditTask, editTask }: { tasks: Task
                                             {TIME.parseDate(task.due_date)}
                                         </p>
                                     </CardContent>
+                                    <CardFooter className="flex items-center gap-2">
+                                        <div>
+                                        <Avatar className="flex items-center">
+                                            <AvatarImage
+                                            src="https://github.com/shadcn.png"
+                                            alt="@shadcn"
+                                            className="grayscale"
+                                            />
+                                            <div className="flex flex-col mx-3">
+                                            <span>{task?.assignee_info?.name}</span>
+                                            <span className="text-xs text-muted-foreground">{task?.assignee_info?.email}</span>
+                                            </div>
+                                        </Avatar>
+                                        </div>
+                                    </CardFooter>
                                 </Card>
                         ))}
                     </div>

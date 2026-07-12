@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { SidebarLayout } from "@/components/index";
+import QueryProvider from "@/components/providers";
 
 import "./globals.css";
 
@@ -35,9 +36,11 @@ export default function RootLayout({
         
           <SidebarProvider>
             <SidebarLayout />
-            <main className="flex-1 px-8 py-6 lg:px-8">
-              {children}
-            </main>
+             <QueryProvider>
+                <main className="flex-1 px-8 py-6 lg:px-8">
+                  {children}
+                </main>
+              </QueryProvider>
           </SidebarProvider>
           
       </body>

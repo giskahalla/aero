@@ -4,8 +4,6 @@ import React from "react"
 import { useForm } from "react-hook-form"
 import { UserRound } from "lucide-react"
 
-import { teams } from "./constants"
-
 import {
     Dialog,
     DialogTrigger,
@@ -19,11 +17,15 @@ import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { TeamForm, TeamList } from "./components"
+import QueryProvider from "@/components/providers"
 
 import { TeamFormInput } from "@/types"
 
+import { TEAM } from "@/hooks"
+
 function TeamModal() {
 
+    const [page, setPage] = React.useState(1);
     const [search, setSearch] = React.useState('')
     const { register, handleSubmit } = useForm<TeamFormInput>({
         defaultValues: {
@@ -37,16 +39,7 @@ function TeamModal() {
         console.log("Data Form:", data)
     }
 
-    const filteredTeams = teams.filter(tm => {
-        if (search === '') return true;
-        
-        const keyword = search.toLowerCase();
-
-        const matchName = tm.name ? tm.name.toLowerCase().includes(keyword) : false;
-        const matchRole = tm.role ? tm.role.toLowerCase().includes(keyword) : false;
-
-        return matchName || matchRole;
-    });
+    const { data: { data: teams, total } = { data: [], total: 0 } } = TEAM.getTeams({ keyword: search, page });
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -59,18 +52,26 @@ function TeamModal() {
                     </div>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                         <span className="truncate font-medium">Manage Team</span>
-                        <span className="truncate text-xs">{filteredTeams.length} members</span>
+                        <span className="truncate text-xs">{total} members</span>
                     </div>
                 </DialogTitle>
             </DialogHeader>
 
              <Field orientation="horizontal">
-                <Input type="search" placeholder="Search name or role..." onChange={(e) => setSearch(e.target.value)}/>
+                <Input 
+                    type="search" 
+                    placeholder="Search name or role..." 
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            setSearch(e.currentTarget.value);
+                        }
+                    }}
+                />
                 <Button>Search</Button>
             </Field>
 
             <div className="-mx-4 px-4">
-                <TeamList teams={filteredTeams}/>
+                <TeamList teams={teams} total={total} onPageChange={setPage} />
             </div>
 
             <DialogFooter>
@@ -85,6 +86,7 @@ function TeamModal() {
 export function Teams({ btnAction }: { btnAction: React.ReactElement })  {
 
     return ( 
+        <QueryProvider>
         <Dialog>
             <DialogTrigger asChild className="cursor-pointer">     
                 {btnAction}
@@ -92,6 +94,7 @@ export function Teams({ btnAction }: { btnAction: React.ReactElement })  {
 
             <TeamModal />
         </Dialog>
+        </QueryProvider>
     )
 
 }

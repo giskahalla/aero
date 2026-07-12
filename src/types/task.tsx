@@ -9,13 +9,19 @@ export interface Task {
     due_date: string
     created_at: string
     updated_at: string,
-    assignee?: number
+    assignee_id?: number
+    assignee_info: {
+        id: number
+        name: string
+        email: string
+    }
+
 }
 
 export interface TaskFormInput {
     title: string
     desc: string
-    assignee: string
+    assignee_id: string
     status: string
     priority: string
     start_date: Date | undefined;

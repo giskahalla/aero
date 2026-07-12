@@ -66,6 +66,7 @@ export function genericColumns<TData extends Record<string, any>>(
           cell: ({ row }) => {
             const rawValue = row.getValue(config.accessorKey || "")
             const user = config.options?.find((opt) => String((opt as any).id) === String(rawValue)) as any
+
             return (
               <div>
                 <Avatar className="flex items-center">

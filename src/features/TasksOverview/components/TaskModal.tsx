@@ -16,6 +16,8 @@ import { FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/datePicker"
+// import { Spinner } from "@/components/ui/spinner"
+import { Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem, ComboboxEmpty } from "@/components/ui/combobox"
 import FormWrapper from "@/components/ui/formWrapper"
 
 import { COLOR } from "@/constants"
@@ -23,14 +25,16 @@ import { COLOR } from "@/constants"
 import { Task, TaskFormInput } from "@/types"
 
 import { TIME } from '@/utils'
+import { createTask, updateTask } from "@/hooks/tasks"
+import { TEAM } from "@/hooks"
 
 const { priorityColors } = COLOR
 
 function TaskModalForm({ editTask, setEditTask }: { editTask: Task | null; setEditTask: (task: Task | null) => void }) {
 
-    const { assignee, priority, status, start_date, due_date, title } = editTask || {}
+    const { assignee_id, priority, status, start_date, due_date, title } = editTask || {}
 
-    const assigneeStr = assignee?.toString() || ''
+    const assigneeStr = assignee_id?.toString() || ''
     const priorityStr = priority?.toString() || '3'
     const statusStr = status?.toString() || '0'
     const startDate = TIME.parseDateStandard(start_date)
@@ -39,7 +43,7 @@ function TaskModalForm({ editTask, setEditTask }: { editTask: Task | null; setEd
     const { register, control, handleSubmit, reset } = useForm<TaskFormInput>({
         defaultValues: {
             title: title || "",
-            assignee: assigneeStr,
+            assignee_id: assigneeStr,
             priority: priorityStr,
             start_date: startDate,
             due_date: dueDate,
@@ -49,7 +53,7 @@ function TaskModalForm({ editTask, setEditTask }: { editTask: Task | null; setEd
     const handleReset = () => {
         reset({
             title: "",
-            assignee: "",
+            assignee_id: "",
             priority: "0",
             status: '',
             start_date: undefined,
@@ -57,11 +61,13 @@ function TaskModalForm({ editTask, setEditTask }: { editTask: Task | null; setEd
         })
     }
 
+    const { data: { data: teamsData } = { data: [] } } = TEAM.getTeams({ id: assignee_id });
+
     React.useEffect(() => {
         if (editTask) {
             reset({
                 title: title,
-                assignee: assigneeStr,
+                assignee_id: assigneeStr,
                 priority: priorityStr,
                 status: statusStr,
                 start_date: startDate,
@@ -72,12 +78,35 @@ function TaskModalForm({ editTask, setEditTask }: { editTask: Task | null; setEd
         }
     }, [editTask, reset])
 
+    const createTaskMutation = createTask()
+    const updateTaskMutation = updateTask() 
     const onSubmit = (data: TaskFormInput) => {
-        console.log("Data Form:", data)
+        console.log("Form data:", data)
+        // if (editTask && editTask.id) {
+        //     updateTaskMutation.mutate({ id: editTask.id, updatedTask: data }, {
+        //         onSuccess: (updatedTask) => {
+        //             handleReset()
+        //             setEditTask(null)
+        //         },
+        //         onError: (error) => {
+        //             console.error("Error updating task:", error)
+        //         },
+        //     })
+        // } else {
+        //     createTaskMutation.mutate(data, {
+        //         onSuccess: (newTask) => {
+        //             handleReset()
+        //             setEditTask(null)
+        //         },
+        //         onError: (error) => {
+        //             console.error("Error creating task:", error)
+        //         },
+        //     })
+        // }
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} id="task-form">
             <DialogContent className="lg:max-w-lg" onInteractOutside={(e) => e.preventDefault()} showCloseButton={false}>
 
             <DialogHeader>
@@ -92,8 +121,42 @@ function TaskModalForm({ editTask, setEditTask }: { editTask: Task | null; setEd
                 </FormWrapper>
 
                 <div className="grid grid-cols-2 gap-4">
-                    <FormWrapper label="Assignee" id="assignee" icon={<UserRound className="w-3 h-3" />}>
-                        <Input id="assignee" {...register("assignee")} />
+                    <FormWrapper label="Assignee" id="assignee_id" icon={<UserRound className="w-3 h-3" />}>
+                        <Controller
+                            control={control}
+                            name="assignee_id"
+                            render={({ field }) => {
+                                const items = teamsData?.map((team: any) => ({ 
+                                    label: team.name, 
+                                    value: team.id.toString() 
+                                })) || [];
+
+                                const selectedItem = items.find((item: any) => item.value === field.value);
+
+                                return (
+                                    <Combobox 
+                                        value={field.value} 
+                                        onValueChange={field.onChange}
+                                        items={items}
+                                    >
+                                        <ComboboxInput 
+                                            value={selectedItem ? selectedItem.label : ""} 
+                                            placeholder="Select assignee" 
+                                        />
+                                        <ComboboxContent>
+                                            <ComboboxEmpty>No items found.</ComboboxEmpty>
+                                            <ComboboxList>
+                                                {(item) => (
+                                                    <ComboboxItem key={item.value} value={item.value}>
+                                                        {item.label}
+                                                    </ComboboxItem>
+                                                )}
+                                            </ComboboxList>
+                                        </ComboboxContent>
+                                    </Combobox>
+                                );
+                            }}
+                        />
                     </FormWrapper>
                     <FormWrapper label="Priority" id="priority" icon={<Flag className="w-3 h-3" />}>
                         <Controller
@@ -141,11 +204,20 @@ function TaskModalForm({ editTask, setEditTask }: { editTask: Task | null; setEd
 
             <DialogFooter>
                 <DialogClose asChild onClick={() => handleReset()}>
-                    <Button variant="outline" onClick={() => setEditTask(null)}>
+                    <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => {
+                            handleReset();
+                            setEditTask(null);
+                        }}
+                    >
                         Cancel
                     </Button>
                 </DialogClose>
-                <Button type="submit">Create Task</Button>
+                <Button type="submit" form="task-form">
+                    {editTask ? "Update Task" : "Create Task"}
+                </Button>
             </DialogFooter>
             </DialogContent>
         </form>

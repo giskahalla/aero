@@ -2,7 +2,6 @@
 
 import React from "react"
 import { Plus, Calendar, Menu, Kanban, SearchIcon } from "lucide-react"
-import { parseISO, getMonth, getYear } from "date-fns"
 
 import { Button } from "@/components/ui/button"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
@@ -10,29 +9,29 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Field } from "@/components/ui/field"
 import { MonthYearPicker } from "@/components/ui/datePicker"
 import { Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem } from "@/components/ui/combobox"
-import { HeaderLayout } from "@/components/index"
+import { HeaderLayout, NotFound, Loading} from "@/components"
 import { TaskCard, TaskCalendar, TaskList, TaskModal } from "./components"
 
 import { Task } from "@/types/index"
 
+import { TASK } from "@/hooks"
+
 import { COLOR } from "@/constants"
 
-export function TasksOverview({ tasks }: { tasks: Task[] }) {
-
+export function TasksOverview() {
+    
     const [month, setMonth] = React.useState<Date>(new Date())
     const [viewType, setViewType] = React.useState<"card" | 'list' | "calendar">("card")
     const [editTask, setEditTask] = React.useState<Task | null>(null)
     const [filter, setFilter] = React.useState({ search: '', priority: 'all' })
 
-   const filteredTasks = tasks.filter((task) => {
-        if (!task?.due_date) return false;
-            
-        const taskDate = parseISO(task.due_date);
-        const matchMonth = getMonth(taskDate) === getMonth(month);
-        const matchYear = getYear(taskDate) === getYear(month);
-        
-        if (!matchMonth || !matchYear) return false;
+    const { data: tasksData, isLoading, error } = TASK.getTasks(month.toISOString().slice(0, 7));
 
+    if (isLoading) return <Loading />;
+
+    if (error) return <NotFound />;
+
+   const filteredTasks = tasksData?.filter((task: Task) => {
         const keyword = filter.search?.toLowerCase();
         const matchSearch = !filter.search || task.title.toLowerCase().includes(keyword);
 
@@ -41,7 +40,7 @@ export function TasksOverview({ tasks }: { tasks: Task[] }) {
         return matchSearch && matchPriority;
     });
 
-    const eachStatusCount = filteredTasks.reduce((acc, task) => {
+    const eachStatusCount = filteredTasks.reduce((acc: Record<number, number>, task: Task) => {
         acc[task.status] = (acc[task.status] || 0) + 1
         return acc
     }, {} as Record<number, number>)

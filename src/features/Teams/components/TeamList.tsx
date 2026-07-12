@@ -18,10 +18,10 @@ const taskColumnsConfig: ColumnConfig[] = [
 
 const columns = genericColumns(taskColumnsConfig)
 
-export function TeamList({ teams = [] }: { teams?: any[] }) {
+export function TeamList({ teams = [], total, onPageChange }: { teams?: any[]; total: number; onPageChange: (page: number) => void }) {
     return (
         <div className="h-[270]">
-            <DataTable columns={columns} data={teams}/>
+            <DataTable columns={columns} data={teams} total={total} onPageChange={onPageChange} />
         </div>
     )
 }

@@ -12,4 +12,4 @@ const TaskSchema = new mongoose.Schema({
   updated_at: { type: Date },
 }, { timestamps: true }); 
 
-export default mongoose.models.Task || mongoose.model('Task', TaskSchema);
+export default mongoose.models.tasks || mongoose.model('tasks', TaskSchema);

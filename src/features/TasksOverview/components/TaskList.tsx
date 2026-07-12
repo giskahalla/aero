@@ -1,27 +1,27 @@
+'use client'
 
 import { DataTable } from "@/components/ui/dataTable";
 import { genericColumns } from "@/components/ui/columns";
 
 import { COLOR } from "@/constants";
-import { teams } from "@/features/Teams/constants";
 
 import { Task, ColumnConfig } from "@/types";
 
 const statuses = Object.values(COLOR.statusColors).map(({ label, value, text }) => ({ label, value, text }))
 const priorities = Object.values(COLOR.priorityColors).map(({ label, value, text }) => ({ label, value, text }))
 
-const taskColumnsConfig: ColumnConfig[] = [
-    { accessorKey: "title", title: "Title", type: "text" },
-    { accessorKey: "status", title: "Status", type: "badge", options: statuses },
-    { accessorKey: "priority", title: "Priority", type: "badge", options: priorities, enableSorting: false },
-    { accessorKey: "due_date", title: "Due Date", type: "date" },
-    { accessorKey: "assignee", title: "Assignee", type: "user", options: teams },
-    { type: "actions" }
-]
-
-const columns = genericColumns(taskColumnsConfig)
-
 export default function TaskList({ tasks }: { tasks: Task[] }) {
+
+    const taskColumnsConfig: ColumnConfig[] = [
+        { accessorKey: "title", title: "Title", type: "text" },
+        { accessorKey: "status", title: "Status", type: "badge", options: statuses },
+        { accessorKey: "priority", title: "Priority", type: "badge", options: priorities, enableSorting: false },
+        { accessorKey: "due_date", title: "Due Date", type: "date" },
+        { accessorKey: "assignee_id", title: "Assignee", type: "user", options: tasks.map(task => ({...task.assignee_info})) },
+        { type: "actions" }
+    ]
+
+    const columns = genericColumns(taskColumnsConfig)
 
     return (
         <div className="my-10">
